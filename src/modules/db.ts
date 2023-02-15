@@ -14,6 +14,8 @@ const query = async (sql: string, args?: string | number[]): QueryResult => {
 };
 
 const crud = (table: string) => ({
+  query,
+
   async read(id: number, fields: string[] = ['*']): QueryResult {
     const names = fields.join(', ');
     const sql = `SELECT ${names} FROM ${table}`;
@@ -36,14 +38,14 @@ const crud = (table: string) => ({
     return query(sql, data);
   },
 
-  async update(id: number, { ...record }: Collection): QueryResult {
+  async update([id, record]: [number, Collection]): QueryResult {
     const keys = Object.keys(record);
     const updates = new Array(keys.length);
     const data = new Array(keys.length);
     let i = 0;
     for (const key of keys) {
       data[i] = record[key];
-      updates[i] = `${key} = $${++i}`;
+      updates[i] = `"${key}" = $${++i}`;
     }
     const delta = updates.join(', ');
     const sql = `UPDATE ${table} SET ${delta} WHERE id = $${++i}`;
@@ -52,7 +54,7 @@ const crud = (table: string) => ({
   },
 
   async delete(id: number): QueryResult {
-    const sql = 'DELETE FROM ${table} WHERE id = $1';
+    const sql = `DELETE FROM ${table} WHERE id = $1`;
     return query(sql, [id]);
   },
 });

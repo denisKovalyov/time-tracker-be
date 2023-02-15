@@ -18,14 +18,17 @@ CREATE TABLE "tasks" (
   "id" bigint generated always as identity,
   "name" varchar NOT NULL,
   "type" varchar NOT NULL,
-  "time" int NOT NULL,
+  "time" varchar NOT NULL,
+  "tags" varchar NOT NULL,
   "startDate" Date NOT NULL,
   "endDate" Date NOT NULL,
-  "projectId" int Not NULL
+  "projectId" int NOT NULL,
+  "userId" bigint NOT NULL
 );
 
 ALTER TABLE "tasks" ADD CONSTRAINT pkTasks PRIMARY KEY ("id");
 ALTER TABLE "tasks" ADD CONSTRAINT "fkTasksProjects" FOREIGN KEY ("projectId") REFERENCES "projects" ("id") ON DELETE CASCADE;
+ALTER TABLE "tasks" ADD CONSTRAINT "fkTasksUsers" FOREIGN KEY ("userId") REFERENCES "users" ("id") ON DELETE CASCADE;
 
 CREATE TABLE "userProject" (
   "userId" bigint NOT NULL,
