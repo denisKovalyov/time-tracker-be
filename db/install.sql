@@ -1,0 +1,5 @@
+DROP DATABASE IF EXISTS timetracker;
+DROP USER IF EXISTS admin;
+CREATE USER admin WITH PASSWORD 'admin';
+CREATE DATABASE timetracker OWNER admin;
+
