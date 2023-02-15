@@ -2,24 +2,26 @@ const pg = require('pg');
 
 let pool = null;
 
+type QueryResult = Promise<object[]>;
+
 const init = (options: Collection) => {
   pool = new pg.Pool(options);
 };
 
-const crud = (table: string) => ({
-  async query(sql, args) {
-    const result = await pool.query(sql, args);
-    return result.rows;
-  },
+const query = async (sql: string, args?: string | number[]): QueryResult => {
+  const result = await pool.query(sql, args);
+  return result.rows;
+};
 
-  async read(id: number, fields: string[] = ['*']) {
+const crud = (table: string) => ({
+  async read(id: number, fields: string[] = ['*']): QueryResult {
     const names = fields.join(', ');
     const sql = `SELECT ${names} FROM ${table}`;
-    if (!id) return pool.query(sql);
-    return pool.query(`${sql} WHERE id = $1`, [id]);
+    if (!id) return query(sql);
+    return query(`${sql} WHERE id = $1`, [id]);
   },
 
-  async create({ ...record }: Collection) {
+  async create({ ...record }: Collection): QueryResult {
     const keys = Object.keys(record);
     const nums = new Array(keys.length);
     const data = new Array(keys.length);
@@ -31,10 +33,10 @@ const crud = (table: string) => ({
     const fields = '"' + keys.join('", "') + '"';
     const params = nums.join(', ');
     const sql = `INSERT INTO "${table}" (${fields}) VALUES (${params})`;
-    return pool.query(sql, data);
+    return query(sql, data);
   },
 
-  async update(id: number, { ...record }: Collection) {
+  async update(id: number, { ...record }: Collection): QueryResult {
     const keys = Object.keys(record);
     const updates = new Array(keys.length);
     const data = new Array(keys.length);
@@ -46,12 +48,12 @@ const crud = (table: string) => ({
     const delta = updates.join(', ');
     const sql = `UPDATE ${table} SET ${delta} WHERE id = $${++i}`;
     data.push(id);
-    return pool.query(sql, data);
+    return query(sql, data);
   },
 
-  async delete(id: number) {
+  async delete(id: number): QueryResult {
     const sql = 'DELETE FROM ${table} WHERE id = $1';
-    return pool.query(sql, [id]);
+    return query(sql, [id]);
   },
 });
 
